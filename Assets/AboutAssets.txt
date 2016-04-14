@@ -17,3 +17,15 @@ public class ReadAsset : Activity
 Additionally, some Android functions will automatically load asset files:
 
 Typeface tf = Typeface.CreateFromAsset (Context.Assets, "fonts/samplefont.ttf");
+
+
+-----------
+Description:
+For Group think "Header" of the Expandable ListView For Child think "Items" under the header.
+
+Each require their own layout. And each require their own "GetCount" and "GetView" implementation.
+
+In this example, the header is simply the first letter of the items.
+
+roupView() – Returns view for the list group header
+getChildView() – Returns view for list child item
