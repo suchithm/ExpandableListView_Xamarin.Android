@@ -27,5 +27,260 @@ Each require their own layout. And each require their own "GetCount" and "GetVie
 
 In this example, the header is simply the first letter of the items.
 
-roupView() – Returns view for the list group header
+groupView() – Returns view for the list group header
 getChildView() – Returns view for list child item
+
+--------------------------------------------
+ExpandableListView in xamarin android 
+
+ExpandableListView is basically used to disply the list of data with respective categories.
+Which has the feature to expand and collapse the items in a category when user touches category title.
+
+Step 1: Prepare layout file.
+Expandablelistview requires two separate custom layout file, one for category(group) title and another 
+one for category(child) items. One more main layout which contains ExpandableListView.
+
+Main.axml :
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#bdbdbd"&gt;
+    &lt;ExpandableListView
+        android:id="@+id/lvExp"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:background="#c6c6c6"
+        android:layout_margin="5dp" /&gt;
+&lt;/LinearLayout&gt;
+
+HeaderCustomLayout.axml :
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="#fff69212"&gt;
+    &lt;TextView
+        android:id="@+id/lblListHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
+        android:textSize="17dp"
+        android:text="test"
+        android:textColor="#ffffffff"
+        android:textStyle="bold" /&gt;
+&lt;/LinearLayout&gt;
+
+ListItemCustomLayout.axml
+
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="55dip"
+    android:orientation="vertical"&gt;
+    &lt;TextView
+        android:id="@+id/lblListItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:text="test"
+        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
+        android:textColor="#fff69212"
+        android:textStyle="bold"
+        android:background="#ffffffff" /&gt;
+&lt;/LinearLayout&gt;
+
+Step 2: Create custom adapter class for expandablelistview by inheriting from base class BaseExpandableListAdapter.
+Here like listview,
+GetChildView():  returns view for list child items
+GetGroupView(): returns view for category title 
+
+ExpandableListAdapter.cs
+
+using System;
+using Android.Widget;
+using System.Collections.Generic;
+using Android.App;
+using Android.Views;
+
+namespace ExpandableListViewSample
+{
+	public class ExpandableListAdapter :BaseExpandableListAdapter
+	{
+		private Activity _context;
+		private List&lt;string&gt; _listDataHeader; // header titles
+		// child data in format of header title, child title
+		private Dictionary&lt;string, List&lt;string&gt;&gt; _listDataChild;
+
+		public ExpandableListAdapter(Activity context, List&lt;string&gt; listDataHeader,Dictionary&lt;String, List&lt;string&gt;&gt; listChildData) {
+			_context = context;
+			_listDataHeader = listDataHeader;
+			_listDataChild = listChildData;
+		}
+        //for cchild item view
+		public override Java.Lang.Object GetChild (int groupPosition, int childPosition)
+		{ 
+			return _listDataChild[_listDataHeader[groupPosition]][childPosition];
+		} 
+		public override long GetChildId (int groupPosition, int childPosition)
+		{
+			return childPosition;
+		} 
+
+		public override View GetChildView (int groupPosition, int childPosition, bool isLastChild, View convertView,ViewGroup parent)
+		{ 
+			 string childText = (string) GetChild(groupPosition, childPosition);
+			if (convertView == null) {
+				convertView = _context.LayoutInflater.Inflate (Resource.Layout.ListItemCustomLayout,null); 
+			}
+			TextView  txtListChild = (TextView) convertView.FindViewById(Resource.Id.lblListItem);
+			txtListChild.Text=childText;
+			return convertView;
+		} 
+		public override int GetChildrenCount (int groupPosition)
+		{ 
+			return _listDataChild [_listDataHeader [groupPosition]].Count; 
+		} 
+		//For header view
+		public override Java.Lang.Object GetGroup (int groupPosition)
+		{
+			return _listDataHeader[groupPosition];
+		}  
+		public override int GroupCount {
+			get {
+				return _listDataHeader.Count;
+			}
+		}  
+		public override long GetGroupId (int groupPosition)
+		{
+			return groupPosition;
+		} 
+		public override View GetGroupView (int groupPosition, bool isExpanded, View convertView, ViewGroup parent)
+		{
+			string headerTitle = (string) GetGroup(groupPosition);
+
+			convertView = convertView ?? _context.LayoutInflater.Inflate (Resource.Layout.HeaderCustomLayout, null); 
+			var lblListHeader = (TextView)convertView.FindViewById (Resource.Id.lblListHeader);  
+			lblListHeader.Text=headerTitle;
+
+			return convertView;
+		} 
+		public override bool HasStableIds {
+			get {
+				return false;
+			}
+		} 
+		public override bool IsChildSelectable (int groupPosition, int childPosition)
+		{
+			return true;
+		} 
+
+		class ViewHolderItem :Java.Lang.Object
+		{
+		}
+	}
+}
+
+Step 3: Create Activity class and do the following changes. 
+Prepare the data and  pass to custom adapter class. Here i used two custom list collection one for holding
+data of group title and another one for child items. Dictionary collection is used to combine the both.
+using Android.App;
+using Android.Widget;
+using Android.OS;
+using System.Collections.Generic;
+
+namespace ExpandableListViewSample
+{
+	[Activity (Label = "ExpandableList", MainLauncher = true, Icon = "@mipmap/icon")]
+	public class MainActivity : Activity
+	{ 
+		
+		ExpandableListAdapter listAdapter;
+		ExpandableListView expListView;
+		List&lt;string&gt; listDataHeader;
+		Dictionary&lt;string, List&lt;string&gt;&gt; listDataChild;
+		int previousGroup = -1;
+
+		protected override void OnCreate (Bundle savedInstanceState)
+		{
+			base.OnCreate (savedInstanceState);
+ 
+			SetContentView (Resource.Layout.Main); 
+			expListView = FindViewById&lt;ExpandableListView&gt;(Resource.Id.lvExp);
+
+			// Prepare list data
+			FnGetListData();
+
+			//Bind list
+			listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild); 
+			expListView.SetAdapter (listAdapter); 
+
+			FnClickEvents();
+		}
+		void FnClickEvents()
+		{ 
+			expListView.ChildClick+= delegate(object sender, ExpandableListView.ChildClickEventArgs e) {
+				Toast.MakeText(this,"child clicked",ToastLength.Short).Show();
+			};
+			expListView.GroupExpand += delegate(object sender, ExpandableListView.GroupExpandEventArgs e) {
+ 
+				if(	e.GroupPosition != previousGroup)
+					expListView.CollapseGroup(previousGroup);
+				previousGroup = e.GroupPosition; 
+			};
+			expListView.GroupCollapse+= delegate(object sender, ExpandableListView.GroupCollapseEventArgs e) {
+				Toast.MakeText(this,"group collapsed",ToastLength.Short).Show();
+			}; 
+
+		}
+		 void FnGetListData() {
+			listDataHeader = new List&lt;string&gt;();
+			listDataChild = new Dictionary&lt;string, List&lt;string&gt;&gt;();
+
+			// Adding child data
+			listDataHeader.Add("Computer science");
+			listDataHeader.Add("Electrocs & comm.");
+			listDataHeader.Add("Mechanical");
+
+			// Adding child data
+			var lstCS = new List&lt;string&gt;();
+			lstCS.Add("Data structure");
+			lstCS.Add("C# Programming");
+			lstCS.Add("Java programming");
+			lstCS.Add("ADA");
+			lstCS.Add("Operation reserach");
+			lstCS.Add("OOPS with C");
+			lstCS.Add("C++ Programming");
+
+			var lstEC = new List&lt;string&gt;();
+			lstEC.Add("Field Theory");
+			lstEC.Add("Logic Design");
+			lstEC.Add("Analog electronics");
+			lstEC.Add("Network analysis");
+			lstEC.Add("Micro controller");
+			lstEC.Add("Signals and system");
+
+			var lstMech = new List&lt;string&gt;();
+			lstMech.Add("Instrumentation technology");
+			lstMech.Add("Dynamics of machinnes");
+			lstMech.Add("Energy engineering");
+			lstMech.Add("Design of machine");
+			lstMech.Add("Turbo machine");
+			lstMech.Add("Energy conversion");
+
+			// Header, Child data
+			listDataChild.Add(listDataHeader[0], lstCS);
+			listDataChild.Add(listDataHeader[1], lstEC);
+			listDataChild.Add(listDataHeader[2], lstMech);
+		}
+	}
+}
+
+

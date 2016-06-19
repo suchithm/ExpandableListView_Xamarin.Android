@@ -6,8 +6,8 @@
     android:background="#bdbdbd">
     <ExpandableListView
         android:id="@+id/lvExp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:layout_marginTop="10dp"
-        android:background="#c6c6c6" />
+        android:background="#c6c6c6"
+        android:layout_margin="5dp" />
 </LinearLayout>

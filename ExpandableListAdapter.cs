@@ -14,11 +14,11 @@ namespace ExpandableListViewSample
 		private Dictionary<string, List<string>> _listDataChild;
 
 		public ExpandableListAdapter(Activity context, List<string> listDataHeader,Dictionary<String, List<string>> listChildData) {
-			this._context = context;
-			this._listDataHeader = listDataHeader;
-			this._listDataChild = listChildData;
+			_context = context;
+			_listDataHeader = listDataHeader;
+			_listDataChild = listChildData;
 		}
- 
+        //for cchild item view
 		public override Java.Lang.Object GetChild (int groupPosition, int childPosition)
 		{ 
 			return _listDataChild[_listDataHeader[groupPosition]][childPosition];
@@ -42,6 +42,7 @@ namespace ExpandableListViewSample
 		{ 
 			return _listDataChild [_listDataHeader [groupPosition]].Count; 
 		} 
+		//For header view
 		public override Java.Lang.Object GetGroup (int groupPosition)
 		{
 			return _listDataHeader[groupPosition];
@@ -58,12 +59,9 @@ namespace ExpandableListViewSample
 		public override View GetGroupView (int groupPosition, bool isExpanded, View convertView, ViewGroup parent)
 		{
 			string headerTitle = (string) GetGroup(groupPosition);
-			if (convertView == null) { 
-				convertView =_context.LayoutInflater.Inflate(Resource.Layout.HeaderCustomLayout,null); //infalInflater.inflate(R.layout.list_group, null);
-			}
 
-			TextView lblListHeader = (TextView)convertView.FindViewById (Resource.Id.lblListHeader); 
-			lblListHeader.SetTypeface(null, Android.Graphics.TypefaceStyle.Bold);
+			convertView = convertView ?? _context.LayoutInflater.Inflate (Resource.Layout.HeaderCustomLayout, null); 
+			var lblListHeader = (TextView)convertView.FindViewById (Resource.Id.lblListHeader);  
 			lblListHeader.Text=headerTitle;
 
 			return convertView;

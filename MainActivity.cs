@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ExpandableListViewSample
 {
-	[Activity (Label = "ExpandableListView", MainLauncher = true, Icon = "@mipmap/icon")]
+	[Activity (Label = "ExpandableList", MainLauncher = true, Icon = "@mipmap/icon")]
 	public class MainActivity : Activity
 	{ 
 		
@@ -13,6 +13,8 @@ namespace ExpandableListViewSample
 		ExpandableListView expListView;
 		List<string> listDataHeader;
 		Dictionary<string, List<string>> listDataChild;
+		int previousGroup = -1;
+
 		protected override void OnCreate (Bundle savedInstanceState)
 		{
 			base.OnCreate (savedInstanceState);
@@ -35,7 +37,10 @@ namespace ExpandableListViewSample
 				Toast.MakeText(this,"child clicked",ToastLength.Short).Show();
 			};
 			expListView.GroupExpand += delegate(object sender, ExpandableListView.GroupExpandEventArgs e) {
-				Toast.MakeText(this,"group expanded",ToastLength.Short).Show();
+ 
+				if(	e.GroupPosition != previousGroup)
+					expListView.CollapseGroup(previousGroup);
+				previousGroup = e.GroupPosition; 
 			};
 			expListView.GroupCollapse+= delegate(object sender, ExpandableListView.GroupCollapseEventArgs e) {
 				Toast.MakeText(this,"group collapsed",ToastLength.Short).Show();
@@ -52,7 +57,7 @@ namespace ExpandableListViewSample
 			listDataHeader.Add("Mechanical");
 
 			// Adding child data
-			List<string> lstCS = new List<string>();
+			var lstCS = new List<string>();
 			lstCS.Add("Data structure");
 			lstCS.Add("C# Programming");
 			lstCS.Add("Java programming");
@@ -61,7 +66,7 @@ namespace ExpandableListViewSample
 			lstCS.Add("OOPS with C");
 			lstCS.Add("C++ Programming");
 
-			List<string> lstEC = new List<string>();
+			var lstEC = new List<string>();
 			lstEC.Add("Field Theory");
 			lstEC.Add("Logic Design");
 			lstEC.Add("Analog electronics");
@@ -69,7 +74,7 @@ namespace ExpandableListViewSample
 			lstEC.Add("Micro controller");
 			lstEC.Add("Signals and system");
 
-			List<string> lstMech = new List<string>();
+			var lstMech = new List<string>();
 			lstMech.Add("Instrumentation technology");
 			lstMech.Add("Dynamics of machinnes");
 			lstMech.Add("Energy engineering");
@@ -77,7 +82,8 @@ namespace ExpandableListViewSample
 			lstMech.Add("Turbo machine");
 			lstMech.Add("Energy conversion");
 
-			listDataChild.Add(listDataHeader[0], lstCS); // Header, Child data
+			// Header, Child data
+			listDataChild.Add(listDataHeader[0], lstCS);
 			listDataChild.Add(listDataHeader[1], lstEC);
 			listDataChild.Add(listDataHeader[2], lstMech);
 		}
